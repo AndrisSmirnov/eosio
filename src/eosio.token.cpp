@@ -2,7 +2,6 @@
 
 namespace eosio
 {
-
    void token::addwhite(const name &owner, const name &account)
    {
       require_auth(get_self());
@@ -11,12 +10,11 @@ namespace eosio
       auto existing = whitetable.find(account.value);
       check(existing == whitetable.end(), "row with that name already exists");
 
-      whitetable.emplace(get_self(), [&](auto &s)
-                         { s.account = account; });
+      whitetable.emplace(get_self(), [&](auto &raw)
+                         { raw.account = account; });
    }
 
-   void token::create(const name &issuer,
-                      const asset &maximum_supply)
+   void token::create(const name &issuer, const asset &maximum_supply)
    {
       require_auth(get_self());
 

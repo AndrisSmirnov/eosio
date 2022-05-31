@@ -100,6 +100,23 @@ namespace eosio
 
       [[eosio::action]] void addwhite(const name &owner, const name &account);
 
+      [[eosio::on_notify("eosio.token::transfer")]] void received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo)
+      {
+         if (receiver != get_self() || caller == get_self())
+         {
+            return;
+         }
+         eosio::symbol token_symbol("WAX", 4);
+         eosio::check(value.amount != 1, "Insufficient value ~~~");
+         eosio::check(value.symbol != token_symbol, "Illegal asset symbol ~~~");
+         white whitetable(get_self(), caller.value);
+         auto existing = whitetable.find(caller.value);
+         check(existing == whitetable.end(), "row with that name already exists");
+
+         whitetable.emplace(get_self(), [&](auto &row)
+                            { row.account = caller; });
+      }
+
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
          stats statstable(token_contract_account, sym_code.raw());
@@ -153,5 +170,4 @@ namespace eosio
       void sub_balance(const name &owner, const asset &value);
       void add_balance(const name &owner, const asset &value, const name &ram_payer);
    };
-
 }
