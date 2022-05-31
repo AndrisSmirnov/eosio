@@ -3,6 +3,18 @@
 namespace eosio
 {
 
+   void token::addwhite(const name &owner, const name &account)
+   {
+      require_auth(get_self());
+
+      white whitetable(get_self(), account.value);
+      auto existing = whitetable.find(account.value);
+      check(existing == whitetable.end(), "row with that name already exists");
+
+      whitetable.emplace(get_self(), [&](auto &s)
+                         { s.account = account; });
+   }
+
    void token::create(const name &issuer,
                       const asset &maximum_supply)
    {
@@ -80,6 +92,17 @@ namespace eosio
       check(from != to, "cannot transfer to self");
       require_auth(from);
       check(is_account(to), "to account does not exist");
+
+      if (get_self() != from)
+      {
+         white whitetable_from(get_self(), from.value);
+         auto existing_from = whitetable_from.find(from.value);
+         check(existing_from != whitetable_from.end(), "cannot transfer");
+         white whitetable_to(get_self(), to.value);
+         auto existing_to = whitetable_to.find(to.value);
+         check(existing_to != whitetable_to.end(), "to account cannot accept funds");
+      }
+
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
       const auto &st = statstable.get(sym.raw());
