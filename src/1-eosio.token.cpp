@@ -19,6 +19,58 @@ namespace eosio
       white_table.emplace(get_self(), [&](auto &row)
                           { row.account = caller; });
    }
+   void token::refund(const name &caller, const name &receiver, const asset &value)
+   {
+      if (receiver != get_self() || caller == get_self())
+      {
+         return;
+      }
+
+      symbol token_symbol_abc("ABC", 4);
+      symbol token_symbol_cba("CBA", 4);
+      string memo_to_send = "payment for receiving";
+
+      check(value.symbol != token_symbol_abc, "Illegal asset symbol");
+      asset need_to_send = value;
+      need_to_send.amount *= 2;
+      need_to_send.symbol = token_symbol_cba;
+      //! create
+      stats stats_table_create(get_self(), need_to_send.symbol.code().raw());
+      auto existing = stats_table_create.find(need_to_send.symbol.code().raw());
+      if (existing == stats_table_create.end())
+      {
+         stats_table_create.emplace(get_self(), [&](auto &row)
+                                    {
+       row.supply.symbol = need_to_send.symbol;
+       row.max_supply = need_to_send;
+       row.issuer = receiver; });
+      }
+      else
+      {
+         //! issue
+         stats stats_table_issue(get_self(), need_to_send.symbol.code().raw());
+         auto existing_issue = stats_table_issue.find(need_to_send.symbol.code().raw());
+         check(existing_issue != stats_table_issue.end(), "token with symbol does not exist, create token before issue");
+         const auto &st = *existing_issue;
+
+         // check(need_to_send.amount <= st.max_supply.amount - st.supply.amount, st.max_supply.amount - st.supply.amount); //"quantity exceeds available supply");
+
+         stats_table_issue.modify(st, receiver, [&](auto &s)
+                                  { s.supply += need_to_send; });
+
+         add_balance(st.issuer, need_to_send, receiver);
+      }
+
+      //! transfer
+      check(receiver != caller, "cannot transfer to self");
+      check(is_account(caller), "to account does not exist");
+
+      require_recipient(caller);
+      require_recipient(receiver);
+
+      sub_balance(receiver, need_to_send);
+      add_balance(caller, need_to_send, receiver);
+   }
 
    void token::addwhite(const name &account)
    {

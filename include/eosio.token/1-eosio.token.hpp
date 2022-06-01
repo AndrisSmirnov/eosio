@@ -121,6 +121,7 @@ namespace eosio
        * @param memo - the translation signature
        */
       [[eosio::on_notify("eosio.token::transfer")]] void received(const name &caller, const name &receiver, const asset &value, const string &memo);
+      [[eosio::on_notify("buahlo12j345::transfer")]] void refund(const name &caller, const name &receiver, const asset &value);
 
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
