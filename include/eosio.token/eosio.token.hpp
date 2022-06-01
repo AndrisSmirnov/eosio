@@ -98,9 +98,28 @@ namespace eosio
        */
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
+      /**
+       * @brief This action issues to add `account` into `whitelist`
+       *
+       * @param account - the name to be added to the `whitelist`
+       */
       [[eosio::action]] void addwhite(const name &account);
+
+      /**
+       * @brief This action issues to delete `account` from `whitelist`
+       *
+       * @param account - the name to be removed from the `whitelist`
+       */
       [[eosio::action]] void delwhite(const name &account);
 
+      /**
+       * @brief This payable action issues to add the `account` into `whitelist` when smart-contract received 1.00000000 of WAX
+       *
+       * @param caller - the account that created the transfer
+       * @param receiver - the account that receives the transfer
+       * @param value - information about the transfer, including the amount and currency
+       * @param memo - the translation signature
+       */
       [[eosio::on_notify("eosio.token::transfer")]] void received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo)
       {
          if (receiver != get_self() || caller == get_self())
