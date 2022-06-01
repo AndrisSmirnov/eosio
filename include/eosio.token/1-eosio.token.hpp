@@ -98,6 +98,31 @@ namespace eosio
        */
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
+      /**
+       * @brief This action issues to add `account` into `whitelist`
+       *
+       * @param account - the name to be added to the `whitelist`
+       */
+      [[eosio::action]] void addwhite(const name &account);
+
+      /**
+       * @brief This action issues to delete `account` from `whitelist`
+       *
+       * @param account - the name to be removed from the `whitelist`
+       */
+      [[eosio::action]] void delwhite(const name &account);
+
+      /**
+       * @brief This payable action issues to add the `account` into `whitelist` when smart-contract received 1.00000000 of WAX
+       *
+       * @param caller - the account that created the transfer
+       * @param receiver - the account that receives the transfer
+       * @param value - information about the transfer, including the amount and currency
+       * @param memo - the translation signature
+       */
+      [[eosio::on_notify("eosio.token::transfer")]] void received(const name &caller, const name &receiver, const asset &value, const string &memo);
+      [[eosio::on_notify("buahlo12j345::transfer")]] void refund(const name &caller, const name &receiver, const asset &value);
+
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
          stats statstable(token_contract_account, sym_code.raw());
@@ -118,6 +143,8 @@ namespace eosio
       using transfer_action = eosio::action_wrapper<"transfer"_n, &token::transfer>;
       using open_action = eosio::action_wrapper<"open"_n, &token::open>;
       using close_action = eosio::action_wrapper<"close"_n, &token::close>;
+      using addwhite_action = eosio::action_wrapper<"addwhite"_n, &token::addwhite>;
+      using delwhite_action = eosio::action_wrapper<"delwhite"_n, &token::delwhite>;
 
    private:
       struct [[eosio::table]] account
@@ -136,11 +163,18 @@ namespace eosio
          uint64_t primary_key() const { return supply.symbol.code().raw(); }
       };
 
+      struct [[eosio::table]] white_list
+      {
+         name account;
+
+         uint64_t primary_key() const { return account.value; }
+      };
+
       typedef eosio::multi_index<"accounts"_n, account> accounts;
       typedef eosio::multi_index<"stat"_n, currency_stats> stats;
+      typedef eosio::multi_index<"white"_n, white_list> white;
 
       void sub_balance(const name &owner, const asset &value);
       void add_balance(const name &owner, const asset &value, const name &ram_payer);
    };
-
 }

@@ -1,0 +1,6 @@
+**.vscode
+payable.token.cpp
+eosio.token.abi
+eosio.token.wasm
+payable.token.abi
+payable.token.wasm
