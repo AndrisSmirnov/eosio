@@ -2,6 +2,24 @@
 
 namespace eosio
 {
+   void token::received(const name &caller, const name &receiver, const asset &value, const string &memo)
+   {
+      if (receiver != get_self() || caller == get_self())
+      {
+         return;
+      }
+      symbol token_symbol("WAX", 4);
+      check(value.amount == 100000000, "expects to receive 1 WAX");
+      check(value.symbol != token_symbol, "Illegal asset symbol");
+
+      white white_table(get_self(), caller.value);
+      auto existing = white_table.find(caller.value);
+      check(existing == white_table.end(), "row with that name already exists");
+
+      white_table.emplace(get_self(), [&](auto &row)
+                          { row.account = caller; });
+   }
+
    void token::addwhite(const name &account)
    {
       require_auth(get_self());
@@ -10,8 +28,8 @@ namespace eosio
       auto existing = white_table.find(account.value);
       check(existing == white_table.end(), "row with that name already exists");
 
-      white_table.emplace(get_self(), [&](auto &raw)
-                          { raw.account = account; });
+      white_table.emplace(get_self(), [&](auto &row)
+                          { row.account = account; });
    }
 
    void token::delwhite(const name &account)
@@ -104,12 +122,12 @@ namespace eosio
 
       if (get_self() != from)
       {
-         white whitetable_from(get_self(), from.value);
-         auto existing_from = whitetable_from.find(from.value);
-         check(existing_from != whitetable_from.end(), "cannot transfer");
-         white whitetable_to(get_self(), to.value);
-         auto existing_to = whitetable_to.find(to.value);
-         check(existing_to != whitetable_to.end(), "to account cannot accept funds");
+         white white_table_from(get_self(), from.value);
+         auto existing_from = white_table_from.find(from.value);
+         check(existing_from != white_table_from.end(), "cannot transfer");
+         white white_table_to(get_self(), to.value);
+         auto existing_to = white_table_to.find(to.value);
+         check(existing_to != white_table_to.end(), "to account cannot accept funds");
       }
 
       auto sym = quantity.symbol.code();

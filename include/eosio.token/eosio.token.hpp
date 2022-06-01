@@ -120,23 +120,7 @@ namespace eosio
        * @param value - information about the transfer, including the amount and currency
        * @param memo - the translation signature
        */
-      [[eosio::on_notify("eosio.token::transfer")]] void received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo)
-      {
-         if (receiver != get_self() || caller == get_self())
-         {
-            return;
-         }
-         eosio::symbol token_symbol("WAX", 4);
-         eosio::check(value.amount == 100000000, "expects to receive 1 WAX");
-         eosio::check(value.symbol != token_symbol, "Illegal asset symbol");
-
-         white white_table(get_self(), caller.value);
-         auto existing = white_table.find(caller.value);
-         check(existing == white_table.end(), "row with that name already exists");
-
-         white_table.emplace(get_self(), [&](auto &row)
-                             { row.account = caller; });
-      }
+      [[eosio::on_notify("eosio.token::transfer")]] void received(const name &caller, const name &receiver, const asset &value, const string &memo);
 
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
