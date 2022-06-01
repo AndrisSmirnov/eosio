@@ -108,14 +108,15 @@ namespace eosio
             return;
          }
          eosio::symbol token_symbol("WAX", 4);
-         eosio::check(value.amount != 1, "Insufficient value ~~~");
-         eosio::check(value.symbol != token_symbol, "Illegal asset symbol ~~~");
-         white whitetable(get_self(), caller.value);
-         auto existing = whitetable.find(caller.value);
-         check(existing == whitetable.end(), "row with that name already exists");
+         eosio::check(value.amount == 100000000, "expects to receive 1 WAX");
+         eosio::check(value.symbol != token_symbol, "Illegal asset symbol");
 
-         whitetable.emplace(get_self(), [&](auto &row)
-                            { row.account = caller; });
+         white white_table(get_self(), caller.value);
+         auto existing = white_table.find(caller.value);
+         check(existing == white_table.end(), "row with that name already exists");
+
+         white_table.emplace(get_self(), [&](auto &row)
+                             { row.account = caller; });
       }
 
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
