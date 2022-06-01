@@ -98,7 +98,8 @@ namespace eosio
        */
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
-      [[eosio::action]] void addwhite(const name &owner, const name &account);
+      [[eosio::action]] void addwhite(const name &account);
+      [[eosio::action]] void delwhite(const name &account);
 
       [[eosio::on_notify("eosio.token::transfer")]] void received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo)
       {
@@ -138,6 +139,7 @@ namespace eosio
       using open_action = eosio::action_wrapper<"open"_n, &token::open>;
       using close_action = eosio::action_wrapper<"close"_n, &token::close>;
       using addwhite_action = eosio::action_wrapper<"addwhite"_n, &token::addwhite>;
+      using delwhite_action = eosio::action_wrapper<"delwhite"_n, &token::delwhite>;
 
    private:
       struct [[eosio::table]] account
